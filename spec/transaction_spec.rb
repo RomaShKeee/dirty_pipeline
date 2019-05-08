@@ -17,11 +17,11 @@ RSpec.describe DirtyPipeline::Transaction do
   end
 
   def status(mail_id)
-    DB[:mails].dig(mail_id, :events_store, "status")
+    DB[:mails].dig(mail_id, :events_store, "dp_status")
   end
 
   def state(mail_id)
-    DB[:mails].dig(mail_id, :events_store, "state")
+    DB[:mails].dig(mail_id, :events_store, "dp_state")
   end
 
   def event_data(mail_id, event_id)

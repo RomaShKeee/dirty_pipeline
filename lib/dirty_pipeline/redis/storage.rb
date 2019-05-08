@@ -1,8 +1,8 @@
 module DirtyPipeline
   # Storage structure
   # {
-  #   status: :errored,
-  #   state: {
+  #   dp_status: :errored,
+  #   dp_state: {
   #     field: "value",
   #   },
   #   errors: {
@@ -12,7 +12,7 @@ module DirtyPipeline
   #       created_at: 2018-01-01T13:22Z
   #     },
   #   },
-  #   events: {
+  #   dp_events: {
   #     <event_id>: {
   #       transition: "Create",
   #       args: ...,
@@ -44,32 +44,32 @@ module DirtyPipeline
       end
 
       def status
-        store["status"]
+        store["dp_status"]
       end
 
       def commit!(event)
-        store["status"] = event.destination     if event.success?
-        store["state"].merge!(event.changes)    unless event.changes.to_h.empty?
+        store["dp_status"] = event.destination     if event.success?
+        store["dp_state"].merge!(event.changes)    unless event.changes.to_h.empty?
 
         error = {}
         error = event.error.to_h unless event.error.to_h.empty?
-        store["errors"][event.id] = error
+        store["dp_errors"][event.id] = error
 
         data = {}
         data = event.data.to_h unless event.data.to_h.empty?
-        store["events"][event.id] = data
+        store["dp_events"][event.id] = data
         save!
       end
 
       def find_event(event_id)
-        return unless (found_event = store.dig("events", event_id))
-        Event.new(data: found_event, error: store.dig("errors", event_id))
+        return unless (found_event = store.dig("dp_events", event_id))
+        Event.new(data: found_event, error: store.dig("dp_errors", event_id))
       end
 
       private
 
       def valid_store?
-        (store.keys & %w(status events errors state)).size.eql?(4)
+        (store.keys & %w(dp_status dp_events dp_errors dp_state)).size.eql?(4)
       end
 
       # FIXME: save! - configurable method
@@ -82,10 +82,10 @@ module DirtyPipeline
         @store = subject.send(
           "#{field}=",
           {
-            "status" => nil,
-            "state" => {},
-            "events" => {},
-            "errors" => {}
+            "dp_status" => nil,
+            "dp_state" => {},
+            "dp_events" => {},
+            "dp_errors" => {}
           }
         )
       end

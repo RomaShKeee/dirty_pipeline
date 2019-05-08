@@ -1,8 +1,8 @@
 module DirtyPipeline
   # Storage structure
   # {
-  #   status: :errored,
-  #   state: {
+  #   dp_status: :errored,
+  #   dp_state: {
   #     field: "value",
   #   }
   # }
@@ -49,7 +49,7 @@ module DirtyPipeline
       end
 
       def status
-        store["status"]
+        store["dp_status"]
       end
 
       SAVE_EVENT = <<~SQL
@@ -59,8 +59,8 @@ module DirtyPipeline
         DO UPDATE SET data = EXCLUDED.data, error = EXCLUDED.error;
       SQL
       def commit!(event)
-        store["status"] = event.destination  if event.success?
-        store["state"].merge!(event.changes) unless event.changes.to_h.empty?
+        store["dp_status"] = event.destination  if event.success?
+        store["dp_state"].merge!(event.changes) unless event.changes.to_h.empty?
         data, error = {}, {}
         data = event.data.to_h if event.data.respond_to?(:to_h)
         error = event.error.to_h if event.error.respond_to?(:to_h)
@@ -91,7 +91,7 @@ module DirtyPipeline
       private
 
       def valid_store?
-        (store.keys & %w(status state)).size.eql?(2)
+        (store.keys & %w(dp_status dp_state)).size.eql?(2)
       end
 
       # FIXME: save! - configurable method
@@ -104,8 +104,8 @@ module DirtyPipeline
         @store = subject.send(
           "#{field}=",
           {
-            "status" => nil,
-            "state" => {},
+            "dp_status" => nil,
+            "dp_state" => {},
           }
         )
       end

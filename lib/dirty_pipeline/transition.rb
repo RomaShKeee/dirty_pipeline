@@ -137,11 +137,11 @@ module DirtyPipeline
     end
 
     def bind_state!(subject)
-      @binded_state = -> { subject.send(storage)["state"].to_h }
+      @binded_state = -> { subject.send(storage)["dp_state"].to_h }
     end
 
     def state(subject)
-      subject.send(storage)["state"].to_h
+      subject.send(storage)["dp_state"].to_h
     end
 
     def validate!(policies_list)

@@ -19,19 +19,19 @@ RSpec.describe DirtyPipeline::Storage do
   context 'when storage is pristine' do
     it do
       expect(storage.to_h).to include(
-        "status" => nil,
-        "state" => {},
+        "dp_status" => nil,
+        "dp_state" => {},
       )
     end
   end
 
   context 'when event was committed' do
     def event_data_from_db(mail_id, event_id)
-      DB[:mails].dig(mail_id, :events_store, "events", event_id)
+      DB[:mails].dig(mail_id, :events_store, "dp_events", event_id)
     end
 
     def event_error_from_db(mail_id, event_id)
-      DB[:mails].dig(mail_id, :events_store, "errors", event_id)
+      DB[:mails].dig(mail_id, :events_store, "dp_errors", event_id)
     end
 
     context 'when new event' do
@@ -39,7 +39,7 @@ RSpec.describe DirtyPipeline::Storage do
         storage.commit!(event)
 
         expect(storage.status).to be_nil
-        expect(storage.to_h["state"]).to be_empty
+        expect(storage.to_h["dp_state"]).to be_empty
         expect(storage.find_event(event.id).data).to eq(event.data)
         expect(storage.find_event(event.id).error).to be_empty
       end
@@ -56,7 +56,7 @@ RSpec.describe DirtyPipeline::Storage do
         storage.commit!(event)
 
         expect(storage.status).to eq("open")
-        expect(storage.to_h["state"]).to(
+        expect(storage.to_h["dp_state"]).to(
           match("read_at" => Time.now.utc.iso8601)
         )
         expect(storage.find_event(event.id).data).to eq(event.data)
@@ -77,7 +77,7 @@ RSpec.describe DirtyPipeline::Storage do
         storage.commit!(event)
 
         expect(storage.status).to be_nil
-        expect(storage.to_h["state"]).to be_empty
+        expect(storage.to_h["dp_state"]).to be_empty
         expect(storage.find_event(event.id).error).to eq(event.error)
         expect(storage.find_event(event.id).data).to eq(event.data)
       end
